@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyberpunk Tech Personality Quiz | Project 25</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      font-family: 'Share Tech Mono', monospace;
+      background-color: #05050a;
+      color: #00f0ff;
+    }
+    .font-orbitron { font-family: 'Orbitron', sans-serif; }
+    
+    .bg-cyber-grid {
+      background-image: 
+        linear-gradient(to right, rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 0, 127, 0.05) 1px, transparent 1px);
+      background-size: 30px 30px;
+    }
+
+    .glow-cyan { text-shadow: 0 0 10px rgba(0, 240, 255, 0.7), 0 0 20px rgba(0, 240, 255, 0.5); }
+    .glow-pink { text-shadow: 0 0 10px rgba(255, 0, 127, 0.7), 0 0 20px rgba(255, 0, 127, 0.5); }
+    
+    .box-glow {
+      box-shadow: 0 0 20px rgba(0, 240, 255, 0.2), inset 0 0 10px rgba(0, 240, 255, 0.1);
+    }
+
+    .option-card {
+      transition: all 0.2s ease-in-out;
+    }
+    .option-card:hover {
+      transform: translateX(6px);
+      border-color: #ff007f;
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+      background: rgba(255, 0, 127, 0.1);
+    }
+
+    .scanlines::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+      background-size: 100% 4px;
+      z-index: 20;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-cyber-grid relative scanlines flex flex-col justify-between p-4 sm:p-8">
+
+  <!-- Header -->
+  <header class="flex justify-between items-center border-b border-cyan-500/30 pb-4 max-w-3xl mx-auto w-full z-30">
+    <div class="flex items-center gap-3">
+      <i data-lucide="brain-circuit" class="w-7 h-7 text-cyan-400 animate-pulse"></i>
+      <h1 class="font-orbitron font-extrabold text-lg sm:text-2xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-500">
+        NEURO_QUIZ // P25
+      </h1>
+    </div>
+    <div id="stepIndicator" class="text-xs sm:text-sm font-orbitron text-pink-500 border border-pink-500/40 px-3 py-1 rounded">
+      READY
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="max-w-2xl mx-auto w-full my-auto z-30 py-6">
+
+    <!-- START SCREEN -->
+    <div id="startScreen" class="bg-slate-950/80 border-2 border-cyan-500/50 rounded-2xl p-6 sm:p-10 box-glow text-center backdrop-blur-md relative">
+      <div class="inline-block p-3 rounded-full bg-cyan-950/60 border border-cyan-400/40 mb-4">
+        <i data-lucide="terminal" class="w-10 h-10 text-cyan-400"></i>
+      </div>
+      <h2 class="font-orbitron font-bold text-2xl sm:text-4xl text-cyan-400 glow-cyan mb-3">
+        WHAT'S YOUR TECH ARCHETYPE?
+      </h2>
+      <p class="text-slate-300 text-sm sm:text-base mb-6 leading-relaxed">
+        Answer 55 deep neural situational questions to reveal your true ultimate digital persona in the 2026 Cyberpunk Ecosystem.
+      </p>
+      <button onclick="startQuiz()" class="bg-gradient-to-r from-cyan-500 to-pink-500 text-slate-950 font-orbitron font-black text-lg px-8 py-3 rounded-xl hover:scale-105 transition-all shadow-lg shadow-cyan-500/20">
+        INITIALIZE SCAN ⚡
+      </button>
+    </div>
+
+    <!-- QUESTION SCREEN -->
+    <div id="quizScreen" class="hidden bg-slate-950/80 border-2 border-cyan-500/50 rounded-2xl p-6 sm:p-8 box-glow backdrop-blur-md relative">
+      <!-- Progress Bar -->
+      <div class="w-full bg-slate-900 rounded-full h-2 mb-6 border border-cyan-500/30 overflow-hidden">
+        <div id="progressBar" class="bg-gradient-to-r from-cyan-400 to-pink-500 h-2 rounded-full transition-all duration-300" style="width: 2%"></div>
+      </div>
+
+      <h3 id="questionText" class="font-orbitron font-bold text-lg sm:text-xl text-cyan-300 mb-6 leading-snug">
+        Question goes here...
+      </h3>
+
+      <div id="optionsContainer" class="space-y-3">
+        <!-- Options injected dynamically -->
+      </div>
+    </div>
+
+    <!-- RESULT SCREEN -->
+    <div id="resultScreen" class="hidden bg-slate-950/80 border-2 border-pink-500/50 rounded-2xl p-6 sm:p-8 box-glow backdrop-blur-md text-center relative">
+      <div class="text-xs font-orbitron text-slate-400 tracking-widest mb-1">ANALYSIS COMPLETE</div>
+      <h2 id="resultTitle" class="font-orbitron font-black text-2xl sm:text-4xl text-pink-500 glow-pink mb-2">
+        ARCHETYPE TITLE
+      </h2>
+      <div id="resultTagline" class="inline-block px-3 py-1 bg-pink-950/60 border border-pink-500/40 rounded text-xs font-orbitron text-pink-300 mb-6">
+        SUBTITLE
+      </div>
+
+      <p id="resultDesc" class="text-slate-300 text-sm sm:text-base mb-6 text-left bg-slate-900/60 p-4 rounded-xl border border-slate-800 leading-relaxed">
+        Description...
+      </p>
+
+      <div class="flex flex-col sm:flex-row justify-center gap-3">
+        <button onclick="restartQuiz()" class="border border-cyan-500 text-cyan-400 hover:bg-cyan-500/10 font-orbitron font-bold px-6 py-2.5 rounded-lg text-sm transition">
+          RE-SCAN 🔄
+        </button>
+        <button onclick="copyResult()" class="bg-pink-600 hover:bg-pink-500 text-white font-orbitron font-bold px-6 py-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2">
+          <i data-lucide="copy" class="w-4 h-4"></i> SHARE RESULT
+        </button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-xs text-slate-600 border-t border-slate-800/60 pt-4 max-w-3xl mx-auto w-full z-30">
+    PROJECT #25 // CYBERPUNK TECH ARCHETYPE QUIZ // 55 QUESTIONS EDITION
+  </footer>
+
+  <script>
+    lucide.createIcons();
+
+    const questions = [
+      { q: "1. It's 2 AM and your code has a game-breaking bug. What's your move?", options: [ { text: "☕ Fuel up with another coffee and debug line-by-line till 5 AM.", type: "hacker" }, { text: "🎨 Ignore the bug, polish the CSS animations so it looks cool first.", type: "aesthetic" }, { text: "🤖 Ask AI to fix it in 5 seconds while I chill.", type: "lazy_genius" }, { text: "📑 Read official documentation and write unit tests.", type: "architect" } ] },
+      { q: "2. Choose your ultimate workspace aesthetic:", options: [ { text: "🌆 Pitch black room, dual curved monitors, neon cyan/pink LED glow everywhere.", type: "aesthetic" }, { text: "🖥️ Terminal open, matrix rain wallpaper, 50 tabs of StackOverflow.", type: "hacker" }, { text: "🎧 Minimalist desk, noise-canceling headphones, warm coffee, calm vibes.", type: "architect" }, { text: "📱 Laptop on couch, cozy blanket, phone in hand.", type: "lazy_genius" } ] },
+      { q: "3. How do you approach starting a brand new project?", options: [ { text: "📐 Plan full architecture, database schemas, and folder hierarchy.", type: "architect" }, { text: "🚀 Jump straight into code! Learn by breaking things.", type: "hacker" }, { text: "✨ Spend 3 hours choosing fonts, colors, and design themes.", type: "aesthetic" }, { text: "🧩 Find existing templates or boilerplates to speed-run it.", type: "lazy_genius" } ] },
+      { q: "4. What's your superpower in a team project?", options: [ { text: "🔥 Fixing critical errors when everyone else gives up.", type: "hacker" }, { text: "👁️ Making sure the app looks breathtaking and insanely modern.", type: "aesthetic" }, { text: "⚡ Finding the fastest, most efficient shortcut to finish ahead of time.", type: "lazy_genius" }, { text: "🧠 Keeping the project organized, clean, and bug-free.", type: "architect" } ] },
+      { q: "5. Pick your daily fuel to keep going:", options: [ { text: "☕ Pure iced coffee / espresso shots.", type: "hacker" }, { text: "🧋 Matcha latte or lo-fi beats aesthetic drink.", type: "aesthetic" }, { text: "⚡ High-voltage energy drink.", type: "lazy_genius" }, { text: "🍵 Green tea & structured hydration.", type: "architect" } ] },
+      { q: "6. How do you handle messy legacy code written by someone else?", options: [ { text: "🔥 Rewrite the whole thing from scratch in 48 hours.", type: "hacker" }, { text: "🎨 Wrap it in a gorgeous new UI so no one notices the backend.", type: "aesthetic" }, { text: "🧩 Leave it alone if it works, patch only what's broken.", type: "lazy_genius" }, { text: "📑 Refactor methodically with clean patterns and documentation.", type: "architect" } ] },
+      { q: "7. What is your go-to sound while coding?", options: [ { text: "⚡ Hard synthwave / cyberpunk techno beats.", type: "hacker" }, { text: "🎧 Lo-fi hip hop chill radio with rain sounds.", type: "aesthetic" }, { text: "🔇 Total absolute silence to concentrate.", type: "architect" }, { text: "🎵 Trending pop or gaming live streams in background.", type: "lazy_genius" } ] },
+      { q: "8. Your thoughts on Git commit messages:", options: [ { text: "💻 'fix stuff', 'update', 'asdfghjk' at 4 AM.", type: "hacker" }, { text: "✨ '✨ Add stunning glowing neon button effects.'", type: "aesthetic" }, { text: "🚀 'Quick fix, ship it.'", type: "lazy_genius" }, { text: "📑 Semantic versioning: 'feat(auth): implement secure JWT payload validation'", type: "architect" } ] },
+      { q: "9. When an error stack trace pops up in red, you:", options: [ { text: "😎 Stare it down like a challenge and dive into raw logs.", type: "hacker" }, { text: "😢 Get sad because it ruined your clean dark UI flow.", type: "aesthetic" }, { text: "🔍 Copy-paste the exact error into Google/AI instantly.", type: "lazy_genius" }, { text: "🧐 Analyze the exact error line number and variable state logically.", type: "architect" } ] },
+      { q: "10. What is your dream tech setup device?", options: [ { text: "🖥️ Custom liquid-cooled rig with mechanical custom keyboard.", type: "hacker" }, { text: "💻 Sleek ultra-thin laptop with custom OLED wallpaper.", type: "aesthetic" }, { text: "📱 Phone or tablet where you can code anywhere casually.", type: "lazy_genius" }, { text: "🖥️ Triple-monitor workstation with ergonomic setup.", type: "architect" } ] },
+      { q: "11. How do you name your variables?", options: [ { text: "🔥 x, temp, data1, lol", type: "hacker" }, { text: "✨ glowingNeonElement, cyberPinkTheme", type: "aesthetic" }, { text: "🚀 item, val, tempVar", type: "lazy_genius" }, { text: "📑 userAuthenticationTokenResponseData", type: "architect" } ] },
+      { q: "12. Your reaction when a client asks for last-minute changes:", options: [ { text: "⚡ Accept the challenge and hack it together overnight.", type: "hacker" }, { text: "🎨 Redesign the whole layout to fit their new vibes.", type: "aesthetic" }, { text: "🙄 Sigh, find an automated shortcut, and get it done.", type: "lazy_genius" }, { text: "📋 Evaluate scope impact, timeline, and architectural constraints.", type: "architect" } ] },
+      { q: "13. What is your preferred browser extension?", options: [ { text: "🛠️ Developer tools, Postman, network interceptors.", type: "hacker" }, { text: "🎨 Dark reader, color pickers, custom CSS injectors.", type: "aesthetic" }, { text: "⚡ Ad blockers, auto-refreshers, speed boosters.", type: "lazy_genius" }, { text: "📑 Password managers, JSON formatters, linters.", type: "architect" } ] },
+      { q: "14. How do you learn a brand new programming language?", options: [ { text: "🚀 Build a chaotic project immediately and break things.", type: "hacker" }, { text: "✨ Check out templates and see how pretty you can make it look.", type: "aesthetic" }, { text: "🤖 Ask AI to explain the core syntax in 2 minutes.", type: "lazy_genius" }, { text: "📚 Read documentation from page one, cover to cover.", type: "architect" } ] },
+      { q: "15. Your favorite type of keyboard switch:", options: [ { text: "🔊 Loud, clicky blue mechanical switches that wake the neighbors.", type: "hacker" }, { text: "🌸 Smooth, silent custom pink linear switches with custom keycaps.", type: "aesthetic" }, { text: "💻 Whatever laptop keyboard is nearby.", type: "lazy_genius" }, { text: "⚖️ Heavy tactile brown switches for precise typing.", type: "architect" } ] },
+      { q: "16. When your code compiles successfully on the first try, you feel:", options: [ { text: "🤨 Suspicious. What did I break that I don't know about yet?", type: "hacker" }, { text: "🥳 Ecstatic because the UI animations triggered right!", type: "aesthetic" }, { text: "😎 Nice, moving on to the next task.", type: "lazy_genius" }, { text: "😌 Satisfied, as expected from solid logic.", type: "architect" } ] },
+      { q: "17. How do you organize your desktop files?", options: [ { text: "🌪️ Pure chaos, thousands of files in 'Downloads' folder.", type: "hacker" }, { text: "📁 Clean folders sorted by aesthetic wallpapers and projects.", type: "aesthetic" }, { text: "🗑️ Everything on the desktop in one giant pile.", type: "lazy_genius" }, { text: "🗂️ Meticulously nested folders with strict category naming.", type: "architect" } ] },
+      { q: "18. What is your ultimate tech career goal?", options: [ { text: "🌐 Become an elite cybersecurity hacker or core system dev.", type: "hacker" }, { text: "🎨 Lead UI/UX designer creating breathtaking metaverse experiences.", type: "aesthetic" }, { text: "🏖️ Build passive income apps that run on autopilot.", type: "lazy_genius" }, { text: "🏛️ Chief Technology Officer (CTO) designing enterprise systems.", type: "architect" } ] },
+      { q: "19. How do you take notes during a meeting or lecture?", options: [ { text: "💻 Rapid-fire code snippets and raw text files.", type: "hacker" }, { text: "🎨 Color-coded mind maps with aesthetic highlights.", type: "aesthetic" }, { text: "📸 Take a screenshot and forget about it.", type: "lazy_genius" }, { text: "📑 Structured bullet points with clear headings.", type: "architect" } ] },
+      { q: "20. What is your favorite color palette for coding?", options: [ { text: "⚡ Matrix Green & Deep Black", type: "hacker" }, { text: "🌆 Cyberpunk Neon Cyan & Hot Pink", type: "aesthetic" }, { text: "🌙 Warm Dark Mode & Amber", type: "lazy_genius" }, { text: "❄️ Clean Arctic Blue & Crisp White", type: "architect" } ] },
+      { q: "21. How do you handle coffee spills on your desk?", options: [ { text: "⚡ Wipe it with one hand while keeping fingers on the keyboard.", type: "hacker" }, { text: "😱 Panic because it might stain your aesthetic desk mat.", type: "aesthetic" }, { text: "🧹 Deal with it later when work is done.", type: "lazy_genius" }, { text: "🧻 Methodically clean using microfiber cloths and disconnect power immediately.", type: "architect" } ] },
+      { q: "22. Your approach to debugging production servers:", options: [ { text: "🔥 SSH into live server and fix live with vim.", type: "hacker" }, { text: "✨ Hope the visual error boundary catches it gracefully.", type: "aesthetic" }, { text: "🔄 Restart the server and pray it works.", type: "lazy_genius" }, { text: "📊 Check staging logs, run test suites, deploy via CI/CD pipeline.", type: "architect" } ] },
+      { q: "23. What do you do when the internet goes down?", options: [ { text: "💾 Work offline on local scripts and test local databases.", type: "hacker" }, { text: "🎨 Redesign icons or sketch UI wireframes on paper.", type: "aesthetic" }, { text: "😴 Take a nap or play offline games.", type: "lazy_genius" }, { text: "📖 Read offline technical books or documentation.", type: "architect" } ] },
+      { q: "24. How do you choose your project tech stack?", options: [ { text: "⚡ Whatever lets me write raw code the fastest.", type: "hacker" }, { text: "✨ Whichever framework supports the best animations.", type: "aesthetic" }, { text: "🧩 Whatever is trending and easiest to set up.", type: "lazy_genius" }, { text: "📊 Based on scalability, performance benchmarks, and security.", type: "architect" } ] },
+      { q: "25. Your reaction to finding a zero-day vulnerability:", options: [ { text: "😏 Intrigued. Time to investigate how deep it goes.", type: "hacker" }, { text: "🎨 Hope it doesn't mess up the frontend design.", type: "aesthetic" }, { text: "🤷‍♂️ Not my server, not my problem.", type: "lazy_genius" }, { text: "🛡️ Patch it immediately and update security protocols.", type: "architect" } ] },
+      { q: "26. How do you test your applications?", options: [ { text: "💻 Console.log everywhere until the truth reveals itself.", type: "hacker" }, { text: "👀 Visual check: 'Does it look pretty on my screen?'", type: "aesthetic" }, { text: "🚀 Click two buttons, looks fine, ship it!", type: "lazy_genius" }, { text: "🧪 Automated Jest/Cypress test suites with 95% coverage.", type: "architect" } ] },
+      { q: "27. Your favorite text editor or IDE:", options: [ { text: "🖥️ Neovim / Vim with custom keybindings.", type: "hacker" }, { text: "✨ VS Code with custom neon themes and icon packs.", type: "aesthetic" }, { text: "💻 Whatever opens the fastest.", type: "lazy_genius" }, { text: "🏢 JetBrains IntelliJ / WebStorm enterprise suite.", type: "architect" } ] },
+      { q: "28. How do you celebrate finishing a big project?", options: [ { text: "⚡ Start another project immediately at 3 AM.", type: "hacker" }, { text: "📸 Post aesthetic workspace screenshots on social media.", type: "aesthetic" }, { text: "🍕 Order pizza, watch a movie, and sleep for 12 hours.", type: "lazy_genius" }, { text: "📊 Review project retrospectives and metrics.", type: "architect" } ] },
+      { q: "29. What is your relationship with documentation?", options: [ { text: "⚡ 'Real hackers don't read docs, we read source code.'", type: "hacker" }, { text: "✨ 'I only read it if the UI components look nice.'", type: "aesthetic" }, { text: "🔍 'Search exact StackOverflow answer in 5 seconds.'", type: "lazy_genius" }, { text: "📖 'Documentation is my Bible.'", type: "architect" } ] },
+      { q: "30. How do you manage your daily tasks?", options: [ { text: "🧠 Keep everything in my head while coding furiously.", type: "hacker" }, { text: "🎨 Aesthetic pastel sticky notes and Kanban boards.", type: "aesthetic" }, { text: "📝 Whatever random scrap paper is nearby.", type: "lazy_genius" }, { text: "📅 Strict calendar scheduling with Notion project trackers.", type: "architect" } ] },
+      { q: "31. Your attitude toward artificial intelligence in coding:", options: [ { text: "🤖 A useful assistant to generate boilerplate code faster.", type: "hacker" }, { text: "✨ Cool tool to generate cyberpunk background art.", type: "aesthetic" }, { text: "👑 My main co-pilot that does 90% of the heavy lifting.", type: "lazy_genius" }, { text: "🔍 A tool that requires careful verification and strict code review.", type: "architect" } ] },
+      { q: "32. How do you pick your phone wallpaper?", options: [ { text: "⚡ Terminal matrix code or cyberpunk hacker skull.", type: "hacker" }, { text: "🌆 Stunning neon cityscape or aesthetic pastel gradient.", type: "aesthetic" }, { text: "🖼️ Default factory wallpaper because I'm too lazy to change it.", type: "lazy_genius" }, { text: "📐 Minimalist geometric abstract pattern.", type: "architect" } ] },
+      { q: "33. What is your style of multitasking?", options: [ { text: "💻 Coding while compiling 3 different servers and listening to podcasts.", type: "hacker" }, { text: "🎨 Listening to aesthetic playlists while tweaking CSS shadows.", type: "aesthetic" }, { text: "📱 Scrolling social media while code builds in background.", type: "lazy_genius" }, { text: "🎯 Single-tasking with intense laser focus on one module.", type: "architect" } ] },
+      { q: "34. How do you handle a computer crash mid-project?", options: [ { text: "🔥 Panic for 3 seconds, then recover via git stash.", type: "hacker" }, { text: "😢 Cry because you forgot to save your custom theme settings.", type: "aesthetic" }, { text: "🤷‍♂️ Take a coffee break while it reboots.", type: "lazy_genius" }, { text: "🛡️ Rely on automated cloud backups and RAID arrays.", type: "architect" } ] },
+      { q: "35. Your favorite snack while coding session:", options: [ { text: "⚡ Instant noodles or spicy chips at 3 AM.", type: "hacker" }, { text: "🍓 Macarons, aesthetic pastries, or fruit bowls.", type: "aesthetic" }, { text: "🍫 Whatever candy is within arm's reach.", type: "lazy_genius" }, { text: "🥜 Almonds, walnuts, and healthy brain-boosting snacks.", type: "architect" } ] },
+      { q: "36. How do you respond to code review comments?", options: [ { text: "💬 Defend my logic with technical benchmarks.", type: "hacker" }, { text: "✨ Make sure the formatting looks cleaner.", type: "aesthetic" }, { text: "👍 Accept all suggestions automatically to save time.", type: "lazy_genius" }, { text: "🧐 Discuss design patterns and best practices calmly.", type: "architect" } ] },
+      { q: "37. What is your go-to browser tab count?", options: [ { text: "🔢 150+ tabs across 4 different windows.", type: "hacker" }, { text: "✨ Neatly organized tab groups with custom emojis.", type: "aesthetic" }, { text: "🔄 Constantly closing and opening tabs as needed.", type: "lazy_genius" }, { text: "📑 Exactly 5 essential tabs open at all times.", type: "architect" } ] },
+      { q: "38. How do you secure your digital accounts?", options: [ { text: "🔑 Custom self-hosted GPG keys and complex passphrases.", type: "hacker" }, { text: "✨ Fingerprint login and sleek biometric auth.", type: "aesthetic" }, { text: "🔐 Password manager with auto-generated passwords.", type: "lazy_genius" }, { text: "🛡️ Hardware YubiKeys and multi-factor authentication everywhere.", type: "architect" } ] },
+      { q: "39. Your opinion on CSS frameworks vs vanilla CSS:", options: [ { text: "⚡ Vanilla CSS or raw stylesheets for ultimate control.", type: "hacker" }, { text: "✨ Tailwind CSS because it makes gorgeous UIs super fast.", type: "aesthetic" }, { text: "🚀 Pre-built UI component libraries so I don't write CSS.", type: "lazy_genius" }, { text: "📐 Scalable design systems with strict architectural tokens.", type: "architect" } ] },
+      { q: "40. How do you handle stressful deadlines?", options: [ { text: "⚡ Enter 'hyper-focus mode' and drink 3 espressos.", type: "hacker" }, { text: "✨ Put on high-vibe music and aesthetic lighting.", type: "aesthetic" }, { text: "😎 Chill out, it always gets done somehow.", type: "lazy_genius" }, { text: "📋 Re-prioritize backlog items and delegate tasks.", type: "architect" } ] },
+      { q: "41. What is your preferred operating system?", options: [ { text: "🐧 Arch Linux / Kali Linux custom terminal setup.", type: "hacker" }, { text: "🍏 macOS with stunning desktop widgets and transparency.", type: "aesthetic" }, { text: "💻 Windows with games and quick shortcuts.", type: "lazy_genius" }, { text: "🖥️ Enterprise Ubuntu Server / Stable Debian.", type: "architect" } ] },
+      { q: "42. How do you approach refactoring code?", options: [ { text: "🔥 Rewrite ugly functions until they look like art.", type: "hacker" }, { text: "✨ Make sure variable names sound modern and clean.", type: "aesthetic" }, { text: "🧩 'If it ain't broke, don't touch it.'", type: "lazy_genius" }, { text: "📐 Apply SOLID principles and design patterns.", type: "architect" } ] },
+      { q: "43. Your dream travel destination:", options: [ { text: "🗼 Tokyo back alleys and Akihabara electronics markets.", type: "hacker" }, { text: "🌅 Neo-Tokyo cyberpunk neon streets at night.", type: "aesthetic" }, { text: "🏖️ A quiet tropical beach with good Wi-Fi.", type: "lazy_genius" }, { text: "🏛️ Geneva tech research labs or Swiss Alps cabin.", type: "architect" } ] },
+      { q: "44. How do you track your coding progress?", options: [ { text: "📊 GitHub contribution green squares graph.", type: "hacker" }, { text: "✨ Aesthetic progress bars and beautiful dashboards.", type: "aesthetic" }, { text: "🧠 'I know roughly how much I did.'", type: "lazy_genius" }, { text: "📈 Sprint burndown charts and Jira velocity metrics.", type: "architect" } ] },
+      { q: "45. Your reaction to a new JavaScript framework releasing every week:", options: [ { text: "🙄 Ignore them and stick to core fundamentals.", type: "hacker" }, { text: "✨ Check if their UI components look trendy.", type: "aesthetic" }, { text: "😴 Too tired to care, stick to what works.", type: "lazy_genius" }, { text: "🧐 Evaluate architectural benefits before adoption.", type: "architect" } ] },
+      { q: "46. How do you handle browser console warnings?", options: [ { text: "💻 Ignore them until something actually breaks.", type: "hacker" }, { text: "🎨 Clean them up so the console looks pristine.", type: "aesthetic" }, { text: "🙈 Close the console and pretend I saw nothing.", type: "lazy_genius" }, { text: "📑 Fix every single warning to maintain code hygiene.", type: "architect" } ] },
+      { q: "47. What is your primary motivation for coding?", options: [ { text: "🔥 Solving complex puzzles and mastering technology.", type: "hacker" }, { text: "✨ Creating stunning visual experiences people love.", type: "aesthetic" }, { text: "🚀 Building cool stuff quickly and having fun.", type: "lazy_genius" }, { text: "🏛️ Designing robust systems that stand the test of time.", type: "architect" } ] },
+      { q: "48. How do you set up your desk lighting?", options: [ { text: "⚡ Aggressive RGB backlight behind monitors.", type: "hacker" }, { text: "🌆 Soft pink and cyan ambient neon light strips.", type: "aesthetic" }, { text: "💡 Whatever ceiling light is already turned on.", type: "lazy_genius" }, { text: "📐 Balanced desk lamp with eye-care color temperature.", type: "architect" } ] },
+      { q: "49. Your favorite coding meme style:", options: [ { text: "💀 3 AM debugging skeleton memes.", type: "hacker" }, { text: "✨ Dark mode vs Light mode designer wars.", type: "aesthetic" }, { text: "🤣 StackOverflow copy-paste wizardry memes.", type: "lazy_genius" }, { text: "🤓 Senior architect explaining why simple code is best.", type: "architect" } ] },
+      { q: "50. How do you handle password recovery?", options: [ { text: "🔐 Reset via terminal SSH keys and secure hashes.", type: "hacker" }, { text: "✨ Use biometric Face ID or fingerprint scan.", type: "aesthetic" }, { text: "🔄 Click 'Forgot Password' and use Google login.", type: "lazy_genius" }, { text: "📋 Secure enterprise SSO authentication protocols.", type: "architect" } ] },
+      { q: "51. What is your ideal weekend activity?", options: [ { text: "⚡ Building a custom script or hacking a game.", type: "hacker" }, { text: "✨ Visiting art exhibitions or taking aesthetic city photos.", type: "aesthetic" }, { text: "🎮 Gaming on couch and binge-watching shows.", type: "lazy_genius" }, { text: "📚 Reading system design books or learning algorithms.", type: "architect" } ] },
+      { q: "52. How do you name your Git branches?", options: [ { text: "🔥 fix/bug-xyz-v2", type: "hacker" }, { text: "✨ aesthetic-glow-update", type: "aesthetic" }, { text: "🚀 test-branch", type: "lazy_genius" }, { text: "📑 feature/JIRA-104-auth-validation", type: "architect" } ] },
+      { q: "53. Your reaction when someone touches your mechanical keyboard without asking:", options: [ { text: "⚡ Instant defensive hacker glare.", type: "hacker" }, { text: "✨ 'Careful, don't smudge my custom keycaps!'", type: "aesthetic" }, { text: "🤷‍♂️ 'Go ahead, type whatever.'", type: "lazy_genius" }, { text: "🧐 Politely explain ergonomic typing posture.", type: "architect" } ] },
+      { q: "54. How do you store your project code backups?", options: [ { text: "💾 Multiple local git repos and encrypted USB drives.", type: "hacker" }, { text: "✨ Beautiful GitHub profile with pinned aesthetic repos.", type: "aesthetic" }, { text: "☁️ Whatever auto-saves to cloud storage.", type: "lazy_genius" }, { text: "🛡️ Automated multi-region GitHub and GitLab mirrors.", type: "architect" } ] },
+      { q: "55. Final question: What defines your true tech spirit?", options: [ { text: "⚡ Unstoppable curiosity and midnight code power.", type: "hacker" }, { text: "✨ Master of aesthetics, vibe, and neon elegance.", type: "aesthetic" }, { text: "🚀 Efficiency, smart shortcuts, and maximum chill.", type: "lazy_genius" }, { text: "🧠 Master architect of clean, unbreakable logic.", type: "architect" } ] }
+    ];
+
+    let currentQ = 0;
+    let scores = { hacker: 0, aesthetic: 0, lazy_genius: 0, architect: 0 };
+
+    function startQuiz() {
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('quizScreen').classList.remove('hidden');
+      currentQ = 0;
+      scores = { hacker: 0, aesthetic: 0, lazy_genius: 0, architect: 0 };
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      const q = questions[currentQ];
+      document.getElementById('stepIndicator').innerText = `STEP ${currentQ + 1 < 10 ? '0' + (currentQ + 1) : currentQ + 1} / 55`;
+      document.getElementById('progressBar').style.width = `${((currentQ + 1) / questions.length) * 100}%`;
+      document.getElementById('questionText').innerText = q.q;
+
+      const container = document.getElementById('optionsContainer');
+      container.innerHTML = '';
+
+      q.options.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = "option-card w-full text-left p-4 rounded-xl border border-cyan-500/30 bg-slate-900/60 text-slate-200 text-sm font-sans flex items-center justify-between cursor-pointer";
+        btn.innerHTML = `<span>${opt.text}</span> <i data-lucide="chevron-right" class="w-4 h-4 text-cyan-400"></i>`;
+        btn.onclick = () => selectOption(opt.type);
+        container.appendChild(btn);
+      });
+      lucide.createIcons();
+    }
+
+    function selectOption(type) {
+      scores[type]++;
+      currentQ++;
+      if (currentQ < questions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quizScreen').classList.add('hidden');
+      document.getElementById('resultScreen').classList.remove('hidden');
+      document.getElementById('stepIndicator').innerText = 'COMPLETE';
+
+      let winner = 'hacker';
+      let maxScore = -1;
+      for (let key in scores) {
+        if (scores[key] > maxScore) {
+          maxScore = scores[key];
+          winner = key;
+        }
+      }
+
+      const archetypes = {
+        hacker: {
+          title: "THE NEON HACKER ⚡",
+          tagline: "NIGHT-OWL BUG HUNTER",
+          desc: "You thrive in the dark with lo-fi beats playing. You don't just write code; you bend systems to your will. Driven by curiosity, coffee, and sheer determination, no bug survives past your 3 AM sessions!"
+        },
+        aesthetic: {
+          title: "THE CYBER ARTISAN ✨",
+          tagline: "DESIGN & VIBE ARCHITECT",
+          desc: "For you, if it doesn't look stunning, it doesn't exist. You have an elite eye for glowing neon gradients, UI micro-interactions, and flawless typography. You turn dry lines of code into interactive digital art."
+        },
+        lazy_genius: {
+          title: "THE SYSTEM SHORTCUTTER 🚀",
+          tagline: "MAXIMUM RESULTS, MINIMUM EFFORT",
+          desc: "Why code for 10 hours when you can automate it in 10 minutes? You master tools, AI, and smart shortcuts to deliver insane results while barely breaking a sweat. Work smarter, not harder is your motto!"
+        },
+        architect: {
+          title: "THE MATRIX ARCHITECT 🧠",
+          tagline: "LOGIC & PRECISION MASTER",
+          desc: "Clean code, structured logic, and flawless planning are your weapons. You build systems that never crash. You are the calm brain behind chaotic projects, making sure everything runs smooth behind the scenes."
+        }
+      };
+
+      const res = archetypes[winner];
+      document.getElementById('resultTitle').innerText = res.title;
+      document.getElementById('resultTagline').innerText = res.tagline;
+      document.getElementById('resultDesc').innerText = res.desc;
+    }
+
+    function restartQuiz() {
+      document.getElementById('resultScreen').classList.add('hidden');
+      document.getElementById('startScreen').classList.remove('hidden');
+      document.getElementById('stepIndicator').innerText = 'READY';
+    }
+
+    function copyResult() {
+      const title = document.getElementById('resultTitle').innerText;
+      navigator.clipboard.writeText(`I took the Cyberpunk Tech Personality Quiz (55 Questions)! My Archetype: ${title} ⚡ Check yours out!`);
+      alert("Result copied to clipboard!");
+    }
+  </script>
+</body>
+</html>
